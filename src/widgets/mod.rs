@@ -1,0 +1,11 @@
+pub(crate) mod section_activity;
+pub(crate) mod section_instance;
+pub(crate) mod section_sessions;
+pub(crate) mod section_shared_buffers;
+pub(crate) mod widget_chart;
+pub mod widget_menu;
+pub(crate) mod widget_section_title;
+pub(crate) mod widget_simple_table;
+pub mod widget_summary;
+pub(crate) mod widget_table;
+pub mod widget_text_box;
