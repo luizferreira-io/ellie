@@ -24,6 +24,10 @@ The name "Ellie" comes from the female mammoth character in the Ice Age movies.
 
 ![Screenshot 11](doc/screenshots/screenshot-11.png)
 
+More screenshots [here](https://github.com/luizferreira-io/ellie/tree/main/doc/screenshots).
+
+---
+
 ## Features
 
 - **Dashboard** — Real-time server metrics: cache hit ratio, transactions, rollbacks, locks, conflicts, active sessions, and shared buffers usage.
@@ -94,6 +98,14 @@ ellie --url postgresql://admin:secret@db.example.com:5432/mydb
 
 ---
 
+## Installing
+
+Just unzip it and run it in the terminal.
+
+Pre-compiled binaries for 64-bit Linux and Windows are available in [releases](https://github.com/luizferreira-io/ellie/releases).
+
+---
+
 ## Building on Linux
 
 You will need the Rust compiler. If you don't have it, follow these instructions: https://rust-lang.org/tools/install/
@@ -121,6 +133,26 @@ The binary will be located at `target/release/ellie`.
 
 ---
 
+If you want to build with muls ABI (for maximum compatibility and portability), install musl dev dependencies:
+
+```bash
+sudo apt-get install musl-tools musl-dev
+```
+
+Add the target:
+```bash
+rustup target add x86_64-unknown-linux-musl
+```
+
+And build it:
+```bash
+cargo build --release --target x86_64-unknown-linux-musl
+```
+
+The binary will be located at `target/x86_64-unknown-linux-musl/release/ellie`.
+
+---
+
 ## Building on Windows
 
 You will need the Rust compiler. If you don't have it, follow these instructions: https://rust-lang.org/tools/install/
@@ -142,7 +174,16 @@ The binary will be located at `target\release\ellie.exe`.
 
 This is a **terminal application**. Even on Windows, open terminal first (PowerShell, etc.), and only then run it.
 
+---
 
+## Testing
+
+With Rust installed, just run:
+```bash
+cargo test
+```
+
+---
 
 ## Backlog
 
@@ -163,6 +204,8 @@ This is a **terminal application**. Even on Windows, open terminal first (PowerS
 - **Configurable refresh interval** — Let the user adjust the data refresh rate from the Settings tab or via a CLI flag.
 - **Help overlay** — Add an in-app `?` keybinding that shows a reference of all shortcuts for the current tab.
 - **New tabs** - Database explorer, query executor/explainer/analyser, and troubleshooting.
+
+---
 
 ## Sample Database
 
