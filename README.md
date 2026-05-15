@@ -1,5 +1,9 @@
 # Ellie
 
+[![Build](https://github.com/luizferreira-io/ellie/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/luizferreira-io/ellie/actions/workflows/build.yml)
+[![Test](https://github.com/luizferreira-io/ellie/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/luizferreira-io/ellie/actions/workflows/test.yml)
+
+
 A terminal-based PostgreSQL performance monitoring and tuning tool.
 
 Ellie connects to a PostgreSQL server and provides a real-time interactive dashboard for visualizing server health, active sessions, configuration settings, and detailed performance analysis — all from your terminal.
@@ -133,7 +137,7 @@ The binary will be located at `target/release/ellie`.
 
 ---
 
-If you want to build with muls ABI (for maximum compatibility and portability), install musl dev dependencies:
+If you want to build with musl ABI (for maximum compatibility and portability), install musl dev dependencies:
 
 ```bash
 sudo apt-get install musl-tools musl-dev
