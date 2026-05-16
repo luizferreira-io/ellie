@@ -10,7 +10,10 @@ use ratatui::{
     style::Style,
     symbols,
     text::Line,
-    widgets::{Block, Cell, Paragraph, Row, Scrollbar, ScrollbarOrientation, ScrollbarState, Table, TableState},
+    widgets::{
+        Block, Cell, Paragraph, Row, Scrollbar, ScrollbarOrientation, ScrollbarState, Table,
+        TableState,
+    },
 };
 use std::collections::HashMap;
 use std::time::Instant;
@@ -408,7 +411,12 @@ impl WidgetTable {
             frame.render_widget(block, area);
             let lines = err.lines().count() as u16;
             let y = inner.y + inner.height.saturating_sub(lines) / 2;
-            let centered = Rect { x: inner.x, y, width: inner.width, height: lines.min(inner.height) };
+            let centered = Rect {
+                x: inner.x,
+                y,
+                width: inner.width,
+                height: lines.min(inner.height),
+            };
             frame.render_widget(
                 Paragraph::new(err.as_str())
                     .alignment(Alignment::Center)

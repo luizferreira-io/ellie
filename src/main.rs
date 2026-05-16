@@ -37,5 +37,5 @@ fn is_connection_refused(err: &(dyn std::error::Error + 'static)) -> bool {
     if let Some(io_err) = err.downcast_ref::<std::io::Error>() {
         return io_err.kind() == std::io::ErrorKind::ConnectionRefused;
     }
-    err.source().map_or(false, is_connection_refused)
+    err.source().is_some_and(is_connection_refused)
 }

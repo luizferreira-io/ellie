@@ -43,6 +43,7 @@ impl SectionActivity {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn update_data(
         &mut self,
         db_activity: Vec<Row>,

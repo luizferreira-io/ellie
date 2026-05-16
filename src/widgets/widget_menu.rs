@@ -134,7 +134,7 @@ impl WidgetMenu {
         let rows: Vec<Row> = self
             .items
             .iter()
-            .map(|column| Row::new(column.iter().map(|cell| cell.clone()).collect::<Vec<_>>()))
+            .map(|column| Row::new(column.to_vec()))
             .collect();
 
         let border_color = if self.active {

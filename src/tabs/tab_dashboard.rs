@@ -67,7 +67,7 @@ impl Tab for TabDashboard {
 
     fn needs_refresh(&self) -> bool {
         self.last_refresh
-            .map_or(false, |t| t.elapsed() >= REFRESH_INTERVAL)
+            .is_some_and(|t| t.elapsed() >= REFRESH_INTERVAL)
     }
 
     fn update_data(&mut self, client: &mut Client) -> Result<(), Box<dyn std::error::Error>> {
@@ -134,7 +134,10 @@ impl Tab for TabDashboard {
                 .query,
         ) {
             Ok(rows) => (rows, None),
-            Err(_) => (Vec::new(), Some("Enable pg_buffercache extension\nto view shared buffers content.".to_owned())),
+            Err(_) => (
+                Vec::new(),
+                Some("Enable pg_buffercache extension\nto view shared buffers content.".to_owned()),
+            ),
         };
 
         // Update sessions by database table

@@ -97,18 +97,17 @@ impl App {
     }
 
     fn handle_event(&mut self) -> std::io::Result<()> {
-        if event::poll(Duration::from_millis(250))? {
-            if let Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press {
-                    self.last_error = None;
-                    match key.code {
-                        KeyCode::Char(']') => self.tab_next(),
-                        KeyCode::Char('[') => self.tab_previous(),
-                        KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => self.quit(),
-                        keycode @ KeyCode::Char('1'..='9') => self.tab_set(keycode),
-                        keycode => self.tabs[self.current_tab].handle_event(keycode),
-                    }
-                }
+        if event::poll(Duration::from_millis(250))?
+            && let Event::Key(key) = event::read()?
+            && key.kind == KeyEventKind::Press
+        {
+            self.last_error = None;
+            match key.code {
+                KeyCode::Char(']') => self.tab_next(),
+                KeyCode::Char('[') => self.tab_previous(),
+                KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc => self.quit(),
+                keycode @ KeyCode::Char('1'..='9') => self.tab_set(keycode),
+                keycode => self.tabs[self.current_tab].handle_event(keycode),
             }
         }
         Ok(())
@@ -227,12 +226,12 @@ impl App {
     }
 
     fn tab_set(&mut self, keycode: KeyCode) {
-        if let KeyCode::Char(c) = keycode {
-            if let Some(digit) = c.to_digit(10) {
-                let index = digit as usize;
-                if index > 0 && index <= self.tabs.len() {
-                    self.current_tab = index - 1;
-                }
+        if let KeyCode::Char(c) = keycode
+            && let Some(digit) = c.to_digit(10)
+        {
+            let index = digit as usize;
+            if index > 0 && index <= self.tabs.len() {
+                self.current_tab = index - 1;
             }
         }
     }

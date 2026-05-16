@@ -51,7 +51,12 @@ impl Widget for &WidgetSimpleTable {
             block.render(area, buf);
             let lines = err.lines().count() as u16;
             let y = inner.y + inner.height.saturating_sub(lines) / 2;
-            let centered = Rect { x: inner.x, y, width: inner.width, height: lines.min(inner.height) };
+            let centered = Rect {
+                x: inner.x,
+                y,
+                width: inner.width,
+                height: lines.min(inner.height),
+            };
             Paragraph::new(err.as_str())
                 .alignment(Alignment::Center)
                 .style(Style::new().fg(P::APP_ERROR))

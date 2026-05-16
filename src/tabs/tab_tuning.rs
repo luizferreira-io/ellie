@@ -147,13 +147,15 @@ impl Tab for TabTuning {
                 let error_msg = match definition.key {
                     TuningKey::SharedBuffersContentServer
                     | TuningKey::SharedBuffersContentDatabase => {
-                        "Enable pg_buffercache extension\nto view shared buffers content.".to_owned()
+                        "Enable pg_buffercache extension\nto view shared buffers content."
+                            .to_owned()
                     }
                     TuningKey::TimeConsumingQueriesTotalServer
                     | TuningKey::TimeConsumingQueriesAverageServer
                     | TuningKey::TimeConsumingQueriesTotalDatabase
                     | TuningKey::TimeConsumingQueriesAverageDatabase => {
-                        "Enable pg_stat_statements extension\nto view time-consuming queries.".to_owned()
+                        "Enable pg_stat_statements extension\nto view time-consuming queries."
+                            .to_owned()
                     }
                     _ => e.to_string(),
                 };
