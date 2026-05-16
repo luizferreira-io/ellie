@@ -2,6 +2,7 @@
 
 [![Build](https://github.com/luizferreira-io/ellie/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/luizferreira-io/ellie/actions/workflows/build.yml)
 [![Test](https://github.com/luizferreira-io/ellie/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/luizferreira-io/ellie/actions/workflows/test.yml)
+[![Dependencies](https://deps.rs/repo/github/luizferreira-io/ellie/status.svg)](https://deps.rs/repo/github/luizferreira-io/ellie)
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue?logo=rust)](https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field)
 [![Release](https://img.shields.io/github/v/release/luizferreira-io/ellie)](https://github.com/luizferreira-io/ellie/releases)
 [![License](https://img.shields.io/github/license/luizferreira-io/ellie)](https://github.com/luizferreira-io/ellie/blob/main/LICENSE)

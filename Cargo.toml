@@ -12,13 +12,13 @@ strip = true
 
 [dependencies]
 arguments = "0.8.0"
-console = "0.15.10"
-ratatui = "0.29.0"
-postgres = "0.19.9"
-postgres-inet = "0.19.0"
+console = "0.16"
+ratatui = "0.30"
+postgres = "0.19"
+postgres-inet = "0.19"
 rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-native-certs = "0.8"
-tokio-postgres-rustls = "0.12"
-tui-scrollview = "^0.5"
+tokio-postgres-rustls = "0.13"
+tui-scrollview = "^0.6"
 
 
