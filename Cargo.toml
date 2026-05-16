@@ -1,7 +1,17 @@
 [package]
 name = "ellie"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
+
+description = "PostgreSQL databases performance tuning tool."
+readme = "README.md"
+repository = "https://github.com/luizferreira-io/ellie"
+homepage = "https://github.com/luizferreira-io/ellie"
+license = "GPL-3.0"
+keywords = ["terminal", "postgresql", "performance", "tuning", "database"]
+categories = ["command-line-utilities"]
+publish = false
+default-run = "ellie"
 
 [profile.release]
 opt-level = "z"
