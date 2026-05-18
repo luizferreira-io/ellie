@@ -2,6 +2,7 @@
 name = "ellie"
 version = "0.2.1"
 edition = "2024"
+rust-version = "1.95"
 
 description = "PostgreSQL databases performance tuning tool."
 readme = "README.md"
