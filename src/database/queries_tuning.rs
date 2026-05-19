@@ -661,7 +661,7 @@ pub(crate) static QUERIES_TUNING: LazyLock<HashMap<TuningKey, DatabaseTable>> = 
                         COALESCE(ROUND(100.0 * pg_stat_database.blks_hit / NULLIF(pg_stat_database.blks_hit + pg_stat_database.blks_read, 0), 2), 0.00)::TEXT AS cache_hit_ratio
                     FROM pg_stat_database
                     INNER JOIN pg_database ON pg_stat_database.datname = pg_database.datname
-                    ORDER BY cache_hit_ratio DESC
+                    ORDER BY COALESCE(ROUND(100.0 * pg_stat_database.blks_hit / NULLIF(pg_stat_database.blks_hit + pg_stat_database.blks_read, 0), 2), 0.00) DESC
                     LIMIT 1000;
                 "###,
             },
@@ -695,7 +695,8 @@ pub(crate) static QUERIES_TUNING: LazyLock<HashMap<TuningKey, DatabaseTable>> = 
                         NULLIF(pg_statio_user_tables.heap_blks_hit + pg_statio_user_tables.heap_blks_read + pg_statio_user_tables.idx_blks_hit + pg_statio_user_tables.idx_blks_read, 0), 2), 0.00)::TEXT AS total_cache_hit_ratio
                     FROM pg_statio_user_tables
                     JOIN pg_class ON pg_statio_user_tables.relid = pg_class.oid
-                    ORDER BY (pg_statio_user_tables.heap_blks_read + pg_statio_user_tables.idx_blks_read) DESC
+                    ORDER BY COALESCE(ROUND(100.0 * (pg_statio_user_tables.heap_blks_hit + pg_statio_user_tables.idx_blks_hit) /
+                        NULLIF(pg_statio_user_tables.heap_blks_hit + pg_statio_user_tables.heap_blks_read + pg_statio_user_tables.idx_blks_hit + pg_statio_user_tables.idx_blks_read, 0), 2), 0.00) DESC
                     LIMIT 1000;
                 "###,
             },
