@@ -23,7 +23,7 @@ impl TabFileSettings {
         let columns = table_definitions
             .columns
             .iter()
-            .map(|c| TableColumn::new(c.field, c.title, c.width))
+            .map(|c| TableColumn::new(c.field, c.title, c.width, c.constraint.clone()))
             .collect();
         Self {
             wdg_table: WidgetTable::new("File Settings", table_definitions.query, columns),

@@ -1,4 +1,4 @@
-use crate::database::queries_tuning::{DatabaseColumnDefinition, DatabaseTable};
+use crate::database::queries_tuning::{ColumnConstraint, DatabaseColumnDefinition, DatabaseTable};
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
@@ -117,24 +117,20 @@ pub(crate) static QUERIES_DASHBOARD: LazyLock<HashMap<DashboardKey, DatabaseTabl
             },
         );
 
-        // --------------------------------------------------------------------------------
-        // Table queries (with column definitions)
-        // --------------------------------------------------------------------------------
-
         map.insert(
             DashboardKey::DatabaseActivity,
             DatabaseTable {
                 #[rustfmt::skip]
                 columns: vec![
-                    DatabaseColumnDefinition { field: "database_name",   title: "Database",        width: 20 },
-                    DatabaseColumnDefinition { field: "sessions",        title: "Sessions",        width: 11 },
-                    DatabaseColumnDefinition { field: "commits",         title: "Commits",         width: 10 },
-                    DatabaseColumnDefinition { field: "rollbacks",       title: "Rollbacks",       width: 10 },
-                    DatabaseColumnDefinition { field: "tuples_returned", title: "Tuples Returned", width: 15 },
-                    DatabaseColumnDefinition { field: "tuples_fetched",  title: "Tuples Fetched",  width: 14 },
-                    DatabaseColumnDefinition { field: "tuples_inserted", title: "Tuples Inserted", width: 15 },
-                    DatabaseColumnDefinition { field: "tuples_updated",  title: "Tuples Updated",  width: 14 },
-                    DatabaseColumnDefinition { field: "tuples_deleted",  title: "Tuples Deleted",  width: 14 },
+                    DatabaseColumnDefinition { field: "database_name",   title: "Database",        width: 1,  constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "sessions",        title: "Sessions",        width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "commits",         title: "Commits",         width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "rollbacks",       title: "Rollbacks",       width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_returned", title: "Tuples Returned", width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_fetched",  title: "Tuples Fetched",  width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_inserted", title: "Tuples Inserted", width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_updated",  title: "Tuples Updated",  width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_deleted",  title: "Tuples Deleted",  width: 15, constraint: ColumnConstraint::Length },
                 ],
                 query: r###"
                     SELECT datname                AS database_name,
@@ -158,22 +154,11 @@ pub(crate) static QUERIES_DASHBOARD: LazyLock<HashMap<DashboardKey, DatabaseTabl
         map.insert(
             DashboardKey::SessionsByDatabase,
             DatabaseTable {
+                #[rustfmt::skip]
                 columns: vec![
-                    DatabaseColumnDefinition {
-                        field: "database_name",
-                        title: "Database",
-                        width: 20,
-                    },
-                    DatabaseColumnDefinition {
-                        field: "max_sessions",
-                        title: "Maximum",
-                        width: 15,
-                    },
-                    DatabaseColumnDefinition {
-                        field: "cur_sessions",
-                        title: "Current",
-                        width: 15,
-                    },
+                    DatabaseColumnDefinition { field: "database_name", title: "Database", width: 20, constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "max_sessions",  title: "Maximum",  width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "cur_sessions",  title: "Current",  width: 15, constraint: ColumnConstraint::Length },
                 ],
                 query: r###"
                     SELECT pg_database.datname AS database_name,
@@ -195,8 +180,8 @@ pub(crate) static QUERIES_DASHBOARD: LazyLock<HashMap<DashboardKey, DatabaseTabl
             DatabaseTable {
                 #[rustfmt::skip]
                 columns: vec![
-                    DatabaseColumnDefinition { field: "application_name",  title: "Application",  width: 25 },
-                    DatabaseColumnDefinition { field: "sessions",          title: "Sessions",     width: 15 },
+                    DatabaseColumnDefinition { field: "application_name",  title: "Application",  width: 25, constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "sessions",          title: "Sessions",     width: 15, constraint: ColumnConstraint::Length },
                 ],
                 query: r###"
                     SELECT COALESCE(NULLIF(application_name, ''), '(none)') AS application_name,
@@ -213,10 +198,11 @@ pub(crate) static QUERIES_DASHBOARD: LazyLock<HashMap<DashboardKey, DatabaseTabl
         map.insert(
             DashboardKey::CacheHitByDatabase,
             DatabaseTable {
+                #[rustfmt::skip]
                 columns: vec![
-                    DatabaseColumnDefinition { field: "database_name",   title: "Database",    width: 20 },
-                    DatabaseColumnDefinition { field: "owner",           title: "Owner",       width: 15 },
-                    DatabaseColumnDefinition { field: "cache_hit_ratio", title: "Cache Hit %", width: 11 },
+                    DatabaseColumnDefinition { field: "database_name",   title: "Database",    width: 1,  constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "owner",           title: "Owner",       width: 1,  constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "cache_hit_ratio", title: "Cache Hit %", width: 12, constraint: ColumnConstraint::Length },
                 ],
                 query: r###"
                     SELECT pg_database.datname AS database_name,
@@ -235,12 +221,13 @@ pub(crate) static QUERIES_DASHBOARD: LazyLock<HashMap<DashboardKey, DatabaseTabl
         map.insert(
             DashboardKey::SharedBuffersContentTop10,
             DatabaseTable {
+                #[rustfmt::skip]
                 columns: vec![
-                    DatabaseColumnDefinition { field: "database_name", title: "Database",   width: 14 },
-                    DatabaseColumnDefinition { field: "object_name",   title: "Object",     width: 22 },
-                    DatabaseColumnDefinition { field: "object_type",   title: "Type",       width: 18 },
-                    DatabaseColumnDefinition { field: "cache_size",    title: "Cache Size", width: 10 },
-                    DatabaseColumnDefinition { field: "cache_percent", title: "Cache %",    width:  9 },
+                    DatabaseColumnDefinition { field: "database_name", title: "Database",   width: 14, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "object_name",   title: "Object",     width: 22, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "object_type",   title: "Type",       width: 18, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "cache_size",    title: "Cache Size", width: 10, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "cache_percent", title: "Cache %",    width:  9, constraint: ColumnConstraint::Length },
                 ],
                 query: r###"
                     SELECT pg_database.datname AS database_name,

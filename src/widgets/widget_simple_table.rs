@@ -1,4 +1,4 @@
-use crate::database::{DatabaseColumnDefinition, get_str};
+use crate::database::{ColumnConstraint, DatabaseColumnDefinition, get_str};
 use crate::palette as P;
 use postgres::Row;
 use ratatui::{
@@ -68,7 +68,13 @@ impl Widget for &WidgetSimpleTable {
         let constraints: Vec<Constraint> = self
             .columns
             .iter()
-            .map(|col| Constraint::Length(col.width))
+            .map(|col| match col.constraint {
+                ColumnConstraint::Length => Constraint::Length(col.width),
+                ColumnConstraint::Min => Constraint::Min(col.width),
+                ColumnConstraint::Max => Constraint::Max(col.width),
+                ColumnConstraint::Percentage => Constraint::Percentage(col.width),
+                ColumnConstraint::Fill => Constraint::Fill(col.width),
+            })
             .collect();
         let headers: Vec<Cell> = self
             .columns

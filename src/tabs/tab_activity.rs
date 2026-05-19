@@ -21,7 +21,14 @@ impl TabActivity {
         let columns = table_definitions
             .columns
             .iter()
-            .map(|column| TableColumn::new(column.field, column.title, column.width))
+            .map(|column| {
+                TableColumn::new(
+                    column.field,
+                    column.title,
+                    column.width,
+                    column.constraint.clone(),
+                )
+            })
             .collect();
         Self {
             wdg_table: WidgetTable::new("Instance Activity", table_definitions.query, columns),

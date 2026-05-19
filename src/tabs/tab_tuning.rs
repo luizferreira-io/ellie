@@ -93,7 +93,14 @@ impl TabTuning {
                 let columns = table_def
                     .columns
                     .iter()
-                    .map(|column| TableColumn::new(column.field, column.title, column.width))
+                    .map(|column| {
+                        TableColumn::new(
+                            column.field,
+                            column.title,
+                            column.width,
+                            column.constraint.clone(),
+                        )
+                    })
                     .collect();
                 let mut table = WidgetTable::new(definition.name, table_def.query, columns);
                 table.set_active(false);

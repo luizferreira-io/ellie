@@ -9,7 +9,9 @@ pub(crate) use queries_activity::{ActivityKey, QUERIES_ACTIVITY};
 pub(crate) use queries_dashboard::{DashboardKey, QUERIES_DASHBOARD};
 pub(crate) use queries_file_settings::{FileSettingsKey, QUERIES_FILE_SETTINGS};
 pub(crate) use queries_settings::{QUERIES_SETTINGS, SettingsKey};
-pub(crate) use queries_tuning::{DatabaseColumnDefinition, QUERIES_TUNING, TuningKey};
+pub(crate) use queries_tuning::{
+    ColumnConstraint, DatabaseColumnDefinition, QUERIES_TUNING, TuningKey,
+};
 pub(crate) use utils::get_str;
 
 use std::sync::Arc;

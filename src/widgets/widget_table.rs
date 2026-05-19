@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::database::{db_query, get_str};
+use crate::database::{ColumnConstraint, db_query, get_str};
 use crate::palette as P;
 use postgres::Client;
 use ratatui::{
@@ -27,11 +27,12 @@ struct CompleteScrollState {
     table_selected_column: usize,
     table_first_visible_column: usize,
     table_column_widths: Vec<u16>,
+    table_column_constraints: Vec<ColumnConstraint>,
     table_column_order: Vec<usize>,
 }
 
 impl CompleteScrollState {
-    fn new(col_widths: &[u16]) -> Self {
+    fn new(col_widths: &[u16], col_constraints: Vec<ColumnConstraint>) -> Self {
         let mut table_state = TableState::default();
         table_state.select(Some(0));
         Self {
@@ -40,6 +41,7 @@ impl CompleteScrollState {
             table_selected_column: 0,
             table_first_visible_column: 0,
             table_column_widths: col_widths.to_vec(),
+            table_column_constraints: col_constraints,
             table_column_order: (0..col_widths.len()).collect(),
         }
     }
@@ -90,7 +92,16 @@ impl CompleteScrollState {
     fn col_constraints(&self, col_defs: &[usize]) -> Vec<Constraint> {
         col_defs
             .iter()
-            .map(|&i| Constraint::Length(self.table_column_widths[i]))
+            .map(|&i| {
+                let w = self.table_column_widths[i];
+                match self.table_column_constraints[i] {
+                    ColumnConstraint::Length => Constraint::Length(w),
+                    ColumnConstraint::Min => Constraint::Min(w),
+                    ColumnConstraint::Max => Constraint::Max(w),
+                    ColumnConstraint::Percentage => Constraint::Percentage(w),
+                    ColumnConstraint::Fill => Constraint::Fill(w),
+                }
+            })
             .collect()
     }
 
@@ -258,14 +269,21 @@ pub struct TableColumn {
     pub field: &'static str,
     pub title: &'static str,
     pub width: u16,
+    pub constraint: ColumnConstraint,
 }
 
 impl TableColumn {
-    pub fn new(field: &'static str, title: &'static str, width: u16) -> Self {
+    pub fn new(
+        field: &'static str,
+        title: &'static str,
+        width: u16,
+        constraint: ColumnConstraint,
+    ) -> Self {
         Self {
             field,
             title,
             width,
+            constraint,
         }
     }
 }
@@ -286,13 +304,15 @@ pub struct WidgetTable {
 impl WidgetTable {
     pub fn new(title: impl Into<String>, query: &'static str, columns: Vec<TableColumn>) -> Self {
         let widths: Vec<u16> = columns.iter().map(|c| c.width).collect();
+        let constraints: Vec<ColumnConstraint> =
+            columns.iter().map(|c| c.constraint.clone()).collect();
         Self {
             title: title.into(),
             query,
             columns,
             rows: Vec::new(),
             error: None,
-            scroll: CompleteScrollState::new(&widths),
+            scroll: CompleteScrollState::new(&widths, constraints),
             auto_refresh_secs: 0,
             last_refresh: None,
             interactive: true,

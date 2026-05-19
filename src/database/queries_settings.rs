@@ -1,4 +1,4 @@
-use crate::database::queries_tuning::{DatabaseColumnDefinition, DatabaseTable};
+use crate::database::queries_tuning::{ColumnConstraint, DatabaseColumnDefinition, DatabaseTable};
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
@@ -14,19 +14,20 @@ pub(crate) static QUERIES_SETTINGS: LazyLock<HashMap<SettingsKey, DatabaseTable>
         map.insert(
             SettingsKey::Settings,
             DatabaseTable {
+                #[rustfmt::skip]
                 columns: vec![
-                    DatabaseColumnDefinition { field: "name",            title: "Name",            width: 40 },
-                    DatabaseColumnDefinition { field: "current_value",   title: "Current Value",   width: 15 },
-                    DatabaseColumnDefinition { field: "reset_value",     title: "Reset Value",     width: 15 },
-                    DatabaseColumnDefinition { field: "boot_value",      title: "Boot Value",      width: 15 },
-                    DatabaseColumnDefinition { field: "type",            title: "Type",            width: 10 },
-                    DatabaseColumnDefinition { field: "unit",            title: "Unit",            width:  6 },
-                    DatabaseColumnDefinition { field: "pending_restart", title: "Pending Restart", width:  8 },
-                    DatabaseColumnDefinition { field: "possible_values", title: "Possible Values", width: 30 },
-                    DatabaseColumnDefinition { field: "context",         title: "Context",         width: 20 },
-                    DatabaseColumnDefinition { field: "category",        title: "Category",        width: 64 },
-                    DatabaseColumnDefinition { field: "source",          title: "Source",          width: 60 },
-                    DatabaseColumnDefinition { field: "description",     title: "_description",    width:  0 }, // Ghost column
+                    DatabaseColumnDefinition { field: "name",            title: "Name",            width: 40, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "current_value",   title: "Current Value",   width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "reset_value",     title: "Reset Value",     width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "boot_value",      title: "Boot Value",      width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "type",            title: "Type",            width: 10, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "unit",            title: "Unit",            width:  6, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "pending_restart", title: "Pending Restart", width:  8, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "possible_values", title: "Possible Values", width: 30, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "context",         title: "Context",         width: 20, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "category",        title: "Category",        width: 64, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "source",          title: "Source",          width: 60, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "description",     title: "_description",    width:  0, constraint: ColumnConstraint::Length }, // Ghost column
                 ],
                 query: r###"
                 SELECT name,

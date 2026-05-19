@@ -23,7 +23,14 @@ impl TabSettings {
         let table_columns = table_definitions
             .columns
             .iter()
-            .map(|column| TableColumn::new(column.field, column.title, column.width))
+            .map(|column| {
+                TableColumn::new(
+                    column.field,
+                    column.title,
+                    column.width,
+                    column.constraint.clone(),
+                )
+            })
             .collect();
         Self {
             wdg_table: WidgetTable::new("Settings", table_definitions.query, table_columns),

@@ -1,4 +1,4 @@
-use crate::database::queries_tuning::{DatabaseColumnDefinition, DatabaseTable};
+use crate::database::queries_tuning::{ColumnConstraint, DatabaseColumnDefinition, DatabaseTable};
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
@@ -14,22 +14,23 @@ pub(crate) static QUERIES_ACTIVITY: LazyLock<HashMap<ActivityKey, DatabaseTable>
         map.insert(
             ActivityKey::Activity,
             DatabaseTable {
+                #[rustfmt::skip]
                 columns: vec![
-                    DatabaseColumnDefinition { field: "pid",                title: "PID",                width:  7 },
-                    DatabaseColumnDefinition { field: "backend_type",       title: "Backend Type",       width: 30 },
-                    DatabaseColumnDefinition { field: "database_name",      title: "Database",           width: 20 },
-                    DatabaseColumnDefinition { field: "user_name",          title: "User",               width: 15 },
-                    DatabaseColumnDefinition { field: "application_name",   title: "Application",        width: 30 },
-                    DatabaseColumnDefinition { field: "client",             title: "Client",             width: 25 },
-                    DatabaseColumnDefinition { field: "state",              title: "State",              width: 15 },
-                    DatabaseColumnDefinition { field: "query",              title: "Query",              width: 50 },
-                    DatabaseColumnDefinition { field: "connection_start",   title: "Connection Start",   width: 22 },
-                    DatabaseColumnDefinition { field: "transaction_start",  title: "Transaction Start",  width: 22 },
-                    DatabaseColumnDefinition { field: "query_start",        title: "Query Start",        width: 22 },
-                    DatabaseColumnDefinition { field: "wait_event_type",    title: "Wait Event Type",    width: 16 },
-                    DatabaseColumnDefinition { field: "wait_event",         title: "Wait Event",         width: 20 },
-                    DatabaseColumnDefinition { field: "transaction_id",     title: "Transaction Id",     width: 15 },
-                    DatabaseColumnDefinition { field: "transaction_xmin",   title: "Transaction xmin",   width: 15 },
+                    DatabaseColumnDefinition { field: "pid",                title: "PID",                width:  7, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "backend_type",       title: "Backend Type",       width: 30, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "database_name",      title: "Database",           width: 20, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "user_name",          title: "User",               width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "application_name",   title: "Application",        width: 30, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "client",             title: "Client",             width: 25, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "state",              title: "State",              width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "query",              title: "Query",              width: 50, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "connection_start",   title: "Connection Start",   width: 22, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "transaction_start",  title: "Transaction Start",  width: 22, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "query_start",        title: "Query Start",        width: 22, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "wait_event_type",    title: "Wait Event Type",    width: 16, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "wait_event",         title: "Wait Event",         width: 20, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "transaction_id",     title: "Transaction Id",     width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "transaction_xmin",   title: "Transaction xmin",   width: 15, constraint: ColumnConstraint::Length },
                 ],
                 query: r###"
                 SELECT pid::TEXT,
