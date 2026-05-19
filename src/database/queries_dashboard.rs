@@ -11,7 +11,7 @@ pub(crate) enum DashboardKey {
 
     SessionsMetrics,
     // Dashboard tables
-    DatabaseActivity,
+    ActivityByDatabase,
     SessionsByDatabase,
     SessionsByApplication,
     CacheHitByDatabase,
@@ -118,35 +118,61 @@ pub(crate) static QUERIES_DASHBOARD: LazyLock<HashMap<DashboardKey, DatabaseTabl
         );
 
         map.insert(
-            DashboardKey::DatabaseActivity,
+            DashboardKey::CacheHitByDatabase,
             DatabaseTable {
                 #[rustfmt::skip]
                 columns: vec![
-                    DatabaseColumnDefinition { field: "database_name",   title: "Database",        width: 1,  constraint: ColumnConstraint::Fill   },
-                    DatabaseColumnDefinition { field: "sessions",        title: "Sessions",        width: 15, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "commits",         title: "Commits",         width: 15, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "rollbacks",       title: "Rollbacks",       width: 15, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "tuples_returned", title: "Tuples Returned", width: 15, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "tuples_fetched",  title: "Tuples Fetched",  width: 15, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "tuples_inserted", title: "Tuples Inserted", width: 15, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "tuples_updated",  title: "Tuples Updated",  width: 15, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "tuples_deleted",  title: "Tuples Deleted",  width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "database_name",   title: "Database",    width: 1,  constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "owner",           title: "Owner",       width: 1,  constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "cache_hit_ratio", title: "Cache Hit %", width: 12, constraint: ColumnConstraint::Length },
                 ],
                 query: r###"
-                    SELECT datname                AS database_name,
-                        numbackends::TEXT      AS sessions,
-                        xact_commit::TEXT      AS commits,
-                        xact_rollback::TEXT    AS rollbacks,
-                        tup_returned::TEXT     AS tuples_returned,
-                        tup_fetched::TEXT      AS tuples_fetched,
-                        tup_inserted::TEXT     AS tuples_inserted,
-                        tup_updated::TEXT      AS tuples_updated,
-                        tup_deleted::TEXT      AS tuples_deleted
+                    SELECT pg_database.datname AS database_name,
+                        pg_get_userbyid(pg_database.datdba) AS owner,
+                        pg_stat_database.blks_read::TEXT AS disk_reads,
+                        pg_stat_database.blks_hit::TEXT AS cache_reads,
+                        COALESCE(ROUND(100.0 * pg_stat_database.blks_hit / NULLIF(pg_stat_database.blks_hit + pg_stat_database.blks_read, 0), 2), 0.00)::TEXT AS cache_hit_ratio
                     FROM pg_stat_database
-                    WHERE datname IS NOT NULL
-                        AND datname NOT IN ('template0', 'template1')
-                    ORDER BY datname
+                    INNER JOIN pg_database ON pg_stat_database.datname = pg_database.datname
+                    ORDER BY COALESCE(ROUND(100.0 * pg_stat_database.blks_hit / NULLIF(pg_stat_database.blks_hit + pg_stat_database.blks_read, 0), 2), 0.00) DESC
                     LIMIT 1000;
+                "###,
+            },
+        );
+
+        map.insert(
+            DashboardKey::SharedBuffersContentTop10,
+            DatabaseTable {
+                #[rustfmt::skip]
+                columns: vec![
+                    DatabaseColumnDefinition { field: "database_name", title: "Database",   width: 1,  constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "object_name",   title: "Object",     width: 1,  constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "object_type",   title: "Type",       width: 1,  constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "cache_size",    title: "Cache Size", width: 10, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "cache_percent", title: "Cache %",    width: 10, constraint: ColumnConstraint::Length },
+                ],
+                query: r###"
+                    SELECT pg_database.datname AS database_name,
+                        pg_class.relname AS object_name,
+                        CASE pg_class.relkind
+                            WHEN 'r' THEN 'Table'
+                            WHEN 'i' THEN 'Index'
+                            WHEN 'S' THEN 'Sequence'
+                            WHEN 'v' THEN 'View'
+                            WHEN 'm' THEN 'Materialized View'
+                            WHEN 't' THEN 'TOAST Table'
+                            WHEN 'p' THEN 'Table Partition'
+                            ELSE 'Other (' || pg_class.relkind::TEXT || ')'
+                        END AS object_type,
+                        pg_size_pretty(count(*) * 8192) AS cache_size,
+                        ROUND(100.0 * count(*) / (SELECT setting FROM pg_settings WHERE name = 'shared_buffers')::integer, 2)::TEXT AS cache_percent
+                    FROM pg_buffercache
+                    INNER JOIN pg_database ON pg_buffercache.reldatabase = pg_database.oid
+                    INNER JOIN pg_class ON pg_buffercache.relfilenode = pg_relation_filenode(pg_class.oid)
+                    INNER JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+                    GROUP BY pg_database.datname, pg_namespace.nspname, pg_class.relname, pg_class.relowner, pg_class.relkind
+                    ORDER BY cache_percent DESC
+                    LIMIT 10
                 "###,
             },
         );
@@ -162,8 +188,8 @@ pub(crate) static QUERIES_DASHBOARD: LazyLock<HashMap<DashboardKey, DatabaseTabl
                 ],
                 query: r###"
                     SELECT pg_database.datname AS database_name,
-                        CASE 
-						    WHEN pg_database.datconnlimit = -1 THEN '—' ELSE pg_database.datconnlimit::TEXT 
+                        CASE
+						    WHEN pg_database.datconnlimit = -1 THEN '—' ELSE pg_database.datconnlimit::TEXT
 						END AS max_sessions,
                         COALESCE(pg_stat_database.numbackends, 0)::TEXT AS cur_sessions
                     FROM pg_database
@@ -196,61 +222,35 @@ pub(crate) static QUERIES_DASHBOARD: LazyLock<HashMap<DashboardKey, DatabaseTabl
         );
 
         map.insert(
-            DashboardKey::CacheHitByDatabase,
+            DashboardKey::ActivityByDatabase,
             DatabaseTable {
                 #[rustfmt::skip]
                 columns: vec![
-                    DatabaseColumnDefinition { field: "database_name",   title: "Database",    width: 1,  constraint: ColumnConstraint::Fill   },
-                    DatabaseColumnDefinition { field: "owner",           title: "Owner",       width: 1,  constraint: ColumnConstraint::Fill   },
-                    DatabaseColumnDefinition { field: "cache_hit_ratio", title: "Cache Hit %", width: 12, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "database_name",   title: "Database",        width: 1,  constraint: ColumnConstraint::Fill   },
+                    DatabaseColumnDefinition { field: "sessions",        title: "Sessions",        width: 11, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "commits",         title: "Commits",         width: 11, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "rollbacks",       title: "Rollbacks",       width: 11, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_returned", title: "Tuples Returned", width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_fetched",  title: "Tuples Fetched",  width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_inserted", title: "Tuples Inserted", width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_updated",  title: "Tuples Updated",  width: 15, constraint: ColumnConstraint::Length },
+                    DatabaseColumnDefinition { field: "tuples_deleted",  title: "Tuples Deleted",  width: 15, constraint: ColumnConstraint::Length },
                 ],
                 query: r###"
-                    SELECT pg_database.datname AS database_name,
-                        pg_get_userbyid(pg_database.datdba) AS owner,
-                        pg_stat_database.blks_read::TEXT AS disk_reads,
-                        pg_stat_database.blks_hit::TEXT AS cache_reads,
-                        COALESCE(ROUND(100.0 * pg_stat_database.blks_hit / NULLIF(pg_stat_database.blks_hit + pg_stat_database.blks_read, 0), 2), 0.00)::TEXT AS cache_hit_ratio
+                    SELECT datname                AS database_name,
+                        numbackends::TEXT      AS sessions,
+                        xact_commit::TEXT      AS commits,
+                        xact_rollback::TEXT    AS rollbacks,
+                        tup_returned::TEXT     AS tuples_returned,
+                        tup_fetched::TEXT      AS tuples_fetched,
+                        tup_inserted::TEXT     AS tuples_inserted,
+                        tup_updated::TEXT      AS tuples_updated,
+                        tup_deleted::TEXT      AS tuples_deleted
                     FROM pg_stat_database
-                    INNER JOIN pg_database ON pg_stat_database.datname = pg_database.datname
-                    ORDER BY cache_hit_ratio DESC
+                    WHERE datname IS NOT NULL
+                        AND datname NOT IN ('template0', 'template1')
+                    ORDER BY datname
                     LIMIT 1000;
-                "###,
-            },
-        );
-
-        map.insert(
-            DashboardKey::SharedBuffersContentTop10,
-            DatabaseTable {
-                #[rustfmt::skip]
-                columns: vec![
-                    DatabaseColumnDefinition { field: "database_name", title: "Database",   width: 14, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "object_name",   title: "Object",     width: 22, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "object_type",   title: "Type",       width: 18, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "cache_size",    title: "Cache Size", width: 10, constraint: ColumnConstraint::Length },
-                    DatabaseColumnDefinition { field: "cache_percent", title: "Cache %",    width:  9, constraint: ColumnConstraint::Length },
-                ],
-                query: r###"
-                    SELECT pg_database.datname AS database_name,
-                        pg_class.relname AS object_name,
-                        CASE pg_class.relkind
-                            WHEN 'r' THEN 'Table'
-                            WHEN 'i' THEN 'Index'
-                            WHEN 'S' THEN 'Sequence'
-                            WHEN 'v' THEN 'View'
-                            WHEN 'm' THEN 'Materialized View'
-                            WHEN 't' THEN 'TOAST Table'
-                            WHEN 'p' THEN 'Table Partition'
-                            ELSE 'Other (' || pg_class.relkind::TEXT || ')'
-                        END AS object_type,
-                        pg_size_pretty(count(*) * 8192) AS cache_size,
-                        ROUND(100.0 * count(*) / (SELECT setting FROM pg_settings WHERE name = 'shared_buffers')::integer, 2)::TEXT AS cache_percent
-                    FROM pg_buffercache
-                    INNER JOIN pg_database ON pg_buffercache.reldatabase = pg_database.oid
-                    INNER JOIN pg_class ON pg_buffercache.relfilenode = pg_relation_filenode(pg_class.oid)
-                    INNER JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
-                    GROUP BY pg_database.datname, pg_namespace.nspname, pg_class.relname, pg_class.relowner, pg_class.relkind
-                    ORDER BY cache_percent DESC
-                    LIMIT 10
                 "###,
             },
         );

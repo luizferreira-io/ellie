@@ -162,7 +162,7 @@ impl Tab for TabDashboard {
         let data_activity_by_db = db_query(
             client,
             QUERIES_DASHBOARD
-                .get(&DashboardKey::DatabaseActivity)
+                .get(&DashboardKey::ActivityByDatabase)
                 .unwrap()
                 .query,
         )?;

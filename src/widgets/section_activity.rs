@@ -27,7 +27,7 @@ impl SectionActivity {
             wdg_table_activity: WidgetSimpleTable::new(
                 "Activity by database",
                 QUERIES_DASHBOARD
-                    .get(&DashboardKey::DatabaseActivity)
+                    .get(&DashboardKey::ActivityByDatabase)
                     .unwrap()
                     .columns
                     .clone(),
